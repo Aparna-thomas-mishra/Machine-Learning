@@ -58,3 +58,33 @@ print("\n "+ "-"*80)
 #print new post
 print("New post")
 print(preprocess_text(ng_train.data[sample_index]))
+
+#Load the Universal Sentence Encoder's TF hub module
+embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
+
+#Generate embeddings
+def embed_text(text):
+  return embed(text).numpy()
+
+#Generate Embeddings for each preprocessed document
+x_use = np.vstack([embed_text([doc]) for doc in preprocessed_doc])
+
+#Indexing with FAISS
+
+dimension = x_use.shape[1]
+index = faiss.IndexFlatL2(dimension)
+index.add(x_use)
+
+#Function to perform a query using the FAISS index
+
+def search(query_text,k=5):
+  preprocessed_query = preprocess_text(query_text) #preprocess the query text
+  query_vector = embed_text([preprocessed_query]) #Generate the query vector
+  distances, indices = index.search(query_vector.astype('float32'), k)
+  return distances, indices
+
+#Display the results
+for i, idx in enumerate(indices[0]):
+  print(f"Rank {i+1}: (Distance:{distances[0][i]}) \n {documents[idx]}")
+
+
