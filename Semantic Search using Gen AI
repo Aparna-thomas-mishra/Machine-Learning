@@ -1,1 +1,60 @@
-print("hello world")
+# pip install faiss-cpu numpy scikit-learn
+
+# pip install "tensorflow >= 2.0.0"
+
+# pip install --upgrade tensorflow-hub
+
+import numpy as np
+import tensorflow as tf
+import tensorflow_hub as hub
+import faiss
+import re
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import TfidfVectorizer
+from pprint import pprint
+
+#supressing warnings
+def warn(*args, **kwargs):
+  pass
+
+import warnings
+warnings.warn = warn
+warnings.filterwarnings('ignore')
+
+#Fetch Data
+ng_train = fetch_20newsgroups(subset = 'train')
+
+#Display the first 3 posts from the dataset
+
+for i in range(3):
+  print(f"Sample post {i+1} :\n")
+  pprint(ng_train.data[i])
+  print("\n" + "-"*80 +"\n")
+
+# Data Preprocessing
+
+ng = fetch_20newsgroups(subset = "all")
+documents = ng.data
+
+def preprocess_text(text):
+  text = re.sub(r'From:.*\n?', '', text, flags=re.MULTILINE) #Remove email headers
+  text = re.sub(r'\S*@\S*\s?', '', text) #Remove email addresses
+  text = re.sub(r'[^a-zA-Z\s]', '', text) #Remove punctutations and numbers
+  text = text.lower() #Convert to Lower case
+  text = re.sub(r'\s+', '', text).strip() #remove whitespaces
+  return text
+
+#Preprocess each document
+preprocessed_doc = [preprocess_text(docs) for docs in documents]
+
+#Sample post
+sample_index = 0
+
+#Print original post
+print("Original Post")
+print(ng_train.data[sample_index])
+print("\n "+ "-"*80)
+
+#print new post
+print("New post")
+print(preprocess_text(ng_train.data[sample_index]))
